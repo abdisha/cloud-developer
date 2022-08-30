@@ -29,12 +29,18 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   /**************************************************************************** */
   app.get("/filteredimage",async (req,res) => {
-    const image_url = req.query.image_url;
-    if(image_url){
+      const url = req.query.image_url;
+     
+        if(url === null)
+        return res.status(422).send();
+  
+      const image_url:string = url.ToString();
       let filteredpath  = await filterImageFromURL(image_url);
-      res.sendFile(filteredpath);
-      await deleteLocalFiles(Array.from(filteredpath));
-    }
+     
+      res.status(201).sendFile(filteredpath);
+   
+      res.on('finish',async()=>await deleteLocalFiles(Array.from(filteredpath)));
+   
 
 
   })
@@ -53,3 +59,4 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
       console.log( `press CTRL+C to stop server` );
   } );
 })();
+
