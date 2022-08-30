@@ -1,6 +1,7 @@
-import express from 'express';
+import express, { Response,Request, NextFunction, Errback } from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { ExecException } from 'child_process';
 
 (async () => {
 
@@ -28,21 +29,37 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
-  app.get("/filteredimage",async (req,res) => {
-      const url = req.query.image_url;
-     
-        if(url === null)
-        return res.status(422).send();
-  
-      const image_url:string = url.ToString();
-      let filteredpath  = await filterImageFromURL(image_url);
-     
-      res.status(201).sendFile(filteredpath);
-   
-      res.on('finish',async()=>await deleteLocalFiles(Array.from(filteredpath)));
-   
+  app.get("/filteredimage",
+    async (req:Request,res:Response,next:NextFunction) => {
 
+      try {
+       
+            let image_url:string = req.query.image_url as string;
+            if(!image_url || image_url.length==0) return res.status(422).send("image url required!.");
+          
+            let filteredimage_url:string = await filterImageFromURL(image_url) as string;
+         
+            res.status(200).send(filteredimage_url);
+          
+           res.on('finish',()=> deleteLocalFiles(Array.from(filteredimage_url)));
 
+      } catch (error) {
+        return next(error.toString());
+      }  
+  })
+
+  //middleware for handling
+  app.use(async(err:Errback,req:Request,res:Response,next:NextFunction)=>{
+   
+     if(err.length>0)
+     {
+       return res.status(422).send(err.toString());
+     }
+     else
+     {
+      next();
+     }
+    
   })
   //! END @TODO1
   
