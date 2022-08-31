@@ -39,9 +39,9 @@ import { ExecException } from 'child_process';
            
             let filteredimage_url:string = await filterImageFromURL(image_url);
          
-            res.status(200).send(filteredimage_url);
+            res.status(200).sendFile(filteredimage_url);
           
-           res.on('finish',()=> deleteLocalFiles(Array.from(filteredimage_url)));
+          res.on('finish',async()=> await deleteLocalFiles([filteredimage_url]));
 
       } catch (error) {
         console.log(error)
