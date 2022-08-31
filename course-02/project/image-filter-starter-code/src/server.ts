@@ -36,14 +36,15 @@ import { ExecException } from 'child_process';
        
             let image_url:string = req.query.image_url as string;
             if(!image_url || image_url.length==0) return res.status(422).send("image url required!.");
-          
-            let filteredimage_url:string = await filterImageFromURL(image_url) as string;
+           
+            let filteredimage_url:string = await filterImageFromURL(image_url);
          
             res.status(200).send(filteredimage_url);
           
            res.on('finish',()=> deleteLocalFiles(Array.from(filteredimage_url)));
 
       } catch (error) {
+        console.log(error)
         return next(error.toString());
       }  
   })
